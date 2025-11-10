@@ -1,0 +1,72 @@
+variable "aws_region" {
+  description = "AWS region for resources"
+  type        = string
+  default     = "us-east-1"
+}
+
+variable "function_name" {
+  description = "Lambda function name"
+  type        = string
+  default     = "psg-montar-times"
+}
+
+variable "lambda_runtime" {
+  description = "Lambda runtime"
+  type        = string
+  default     = "python3.13"
+}
+
+variable "lambda_handler" {
+  description = "Lambda handler"
+  type        = string
+  default     = "lambda_function.lambda_handler"
+}
+
+variable "memory_size" {
+  description = "Lambda memory in MB"
+  type        = number
+  default     = 256
+}
+
+variable "timeout" {
+  description = "Lambda timeout in seconds"
+  type        = number
+  default     = 30
+}
+
+variable "environment" {
+  description = "Environment variables for Lambda"
+  type        = map(string)
+  default     = {}
+}
+
+variable "artifact_path" {
+  description = "Path to the built Lambda zip"
+  type        = string
+  default     = "../dist/function.zip"
+}
+
+variable "function_url_auth_type" {
+  description = "Authorization type for Lambda Function URL (NONE or AWS_IAM)"
+  type        = string
+  default     = "NONE"
+}
+
+variable "function_url_cors_allow_origins" {
+  description = "CORS allow origins for Lambda Function URL"
+  type        = list(string)
+  default     = ["*"]
+}
+
+variable "function_url_cors_allow_methods" {
+  description = "CORS allow methods for Lambda Function URL"
+  type        = list(string)
+  default     = ["GET", "POST", "OPTIONS"]
+}
+
+variable "function_url_cors_allow_headers" {
+  description = "CORS allow headers for Lambda Function URL"
+  type        = list(string)
+  default     = ["*"]
+}
+

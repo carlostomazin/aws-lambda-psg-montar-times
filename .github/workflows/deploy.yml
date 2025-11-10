@@ -1,0 +1,87 @@
+name: ci-cd
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "app/**"
+      - "infra/**"
+      - ".github/workflows/**"
+      - "requirements.txt"
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch: {}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps and build Lambda package
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r app/requirements.txt
+          rm -rf build dist
+          mkdir -p build dist
+          cp -r app/* build/
+          pip install -r app/requirements.txt -t build/
+          find build -name "*.pyc" -delete || true
+          find build -name "__pycache__" -type d -exec rm -rf {} + || true
+          cd build
+          zip -r ../dist/function.zip .
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Create CI tfvars for environment
+        working-directory: infra
+        run: |
+          cat > ci.auto.tfvars.json <<EOF
+          {
+            "aws_region": "${{ secrets.AWS_REGION }}",
+            "environment": {
+              "SUPABASE_URL": "${{ secrets.SUPABASE_URL }}",
+              "SUPABASE_KEY": "${{ secrets.SUPABASE_KEY }}"
+            }
+          }
+          EOF
+
+      - name: Terraform Init (S3 backend)
+        working-directory: infra
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+            -backend-config="key=aws-lambda-psg-montar-times/terraform.tfstate" \
+            -backend-config="region=${{ secrets.AWS_REGION }}" \
+            -backend-config="dynamodb_table=${{ secrets.TF_STATE_LOCK_TABLE }}"
+
+      - name: Terraform Validate
+        working-directory: infra
+        run: terraform validate
+
+      - name: Terraform Plan
+        if: github.event_name != 'push'
+        working-directory: infra
+        run: terraform plan -var "artifact_path=../dist/function.zip"
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        working-directory: infra
+        run: terraform apply -auto-approve -var "artifact_path=../dist/function.zip"
+
