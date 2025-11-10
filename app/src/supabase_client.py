@@ -14,4 +14,4 @@ def salvar_jogo(jogo: Jogo) -> None:
     """Save game data to Supabase"""
     jogo_dict = asdict(jogo)
 
-    supabase.table("jogos").insert(jogo_dict).execute()
+    supabase.table("jogos").insert(jogo_dict, upsert=True).execute()
