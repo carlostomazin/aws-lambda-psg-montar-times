@@ -34,6 +34,8 @@ resource "aws_lambda_function" "this" {
   filename         = var.artifact_path
   source_code_hash = filebase64sha256(var.artifact_path)
 
+  architectures = ["arm64"]
+
   memory_size = var.memory_size
   timeout     = var.timeout
 
