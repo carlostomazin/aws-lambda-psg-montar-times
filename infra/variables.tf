@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "function_name" {
   description = "Lambda function name"
   type        = string
-  default     = "psg-montar-times"
+  default     = "lambda-psg-montar-times"
 }
 
 variable "lambda_runtime" {
@@ -45,28 +45,3 @@ variable "artifact_path" {
   type        = string
   default     = "../dist/function.zip"
 }
-
-variable "function_url_auth_type" {
-  description = "Authorization type for Lambda Function URL (NONE or AWS_IAM)"
-  type        = string
-  default     = "NONE"
-}
-
-variable "function_url_cors_allow_origins" {
-  description = "CORS allow origins for Lambda Function URL"
-  type        = list(string)
-  default     = ["*"]
-}
-
-variable "function_url_cors_allow_methods" {
-  description = "CORS allow methods for Lambda Function URL"
-  type        = list(string)
-  default     = ["GET", "POST", "OPTIONS"]
-}
-
-variable "function_url_cors_allow_headers" {
-  description = "CORS allow headers for Lambda Function URL"
-  type        = list(string)
-  default     = ["*"]
-}
-

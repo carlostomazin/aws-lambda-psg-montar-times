@@ -65,11 +65,7 @@ jobs:
       - name: Terraform Init (S3 backend)
         working-directory: infra
         run: |
-          terraform init \
-            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
-            -backend-config="key=aws-lambda-psg-montar-times/terraform.tfstate" \
-            -backend-config="region=${{ secrets.AWS_REGION }}" \
-            -backend-config="dynamodb_table=${{ secrets.TF_STATE_LOCK_TABLE }}"
+          terraform init
 
       - name: Terraform Validate
         working-directory: infra
