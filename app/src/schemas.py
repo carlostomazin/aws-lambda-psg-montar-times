@@ -24,6 +24,6 @@ class Jogo:
     data: str
     times: Times
     jogadores: List[Jogador]
-    updated_at: str = field(
+    atualizado_em: str = field(
         default_factory=lambda: datetime.now(timezone(timedelta(hours=-3))).isoformat()
     )
