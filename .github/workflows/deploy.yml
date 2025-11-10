@@ -33,7 +33,7 @@ jobs:
           rm -rf build dist
           mkdir -p build dist
           cp -r app/* build/
-          pip install -r app/requirements.txt -t build/
+          pip install -r app/requirements.txt -t build/ --platform manylinux2014_x86_64 --only-binary=:all:
           find build -name "*.pyc" -delete || true
           find build -name "__pycache__" -type d -exec rm -rf {} + || true
           cd build
