@@ -1,6 +1,4 @@
-# schemas.py
-
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
 
 
@@ -15,9 +13,9 @@ class Jogador:
 
 @dataclass
 class Times:
-    a: List[str] = []
-    b: List[str] = []
-    c: List[str] = []
+    a: List[str] = field(default_factory=list)
+    b: List[str] = field(default_factory=list)
+    c: List[str] = field(default_factory=list)
 
 
 @dataclass
