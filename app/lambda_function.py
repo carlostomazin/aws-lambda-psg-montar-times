@@ -41,7 +41,11 @@ def lambda_handler(event, context):
     habilidasos = body["habilidasos"]
 
     # Extrair jogadores
-    jogadores: list[Jogador] = extrair_jogadores_json(jogadores_raw)
+    try:
+        jogadores: list[Jogador] = extrair_jogadores_json(jogadores_raw)
+    except Exception as e:
+        logger.error(f"Error extracting players: {e}")
+        return {"statusCode": 400, "body": json.dumps(f"Error extracting players: {e}")}
     logger.info(f"Extracted players: {jogadores}")
 
     # Montar times
@@ -53,12 +57,12 @@ def lambda_handler(event, context):
     logger.info(f"Formed teams: {times}")
 
     # Salvar jogo
-    data_jogo = calcular_data_jogo()
-
-    jogo = Jogo(data=data_jogo, times=times, jogadores=jogadores)
-    logger.info(f"Game data: {jogo}")
-
-    salvar_jogo(jogo)
+    try:
+        data_jogo = calcular_data_jogo()
+        salvar_jogo(Jogo(data=data_jogo, times=times, jogadores=jogadores))
+    except Exception as e:
+        logger.error(f"Error saving game data: {e}")
+        return {"statusCode": 500, "body": json.dumps(f"Error saving game data: {e}")}
     logger.info("Game data saved successfully")
 
     response = {
