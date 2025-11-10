@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List
 
 
@@ -25,5 +25,5 @@ class Jogo:
     times: Times
     jogadores: List[Jogador]
     updated_at: str = field(
-        default_factory=lambda: datetime.now(datetime.timezone.utc).isoformat()
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
     )
