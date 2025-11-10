@@ -45,3 +45,9 @@ variable "artifact_path" {
   type        = string
   default     = "../dist/function.zip"
 }
+
+variable "function_url_auth_type" {
+  description = "Authorization type for Lambda Function URL (NONE or AWS_IAM)"
+  type        = string
+  default     = "NONE"
+}
