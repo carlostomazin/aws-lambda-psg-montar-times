@@ -59,6 +59,7 @@ def lambda_handler(event, context):
     # Salvar jogo
     try:
         data_jogo = calcular_data_jogo()
+        logger.info(f"Game date: {data_jogo}")
         salvar_jogo(Jogo(data=data_jogo, times=times, jogadores=jogadores))
     except Exception as e:
         logger.error(f"Error saving game data: {e}")
