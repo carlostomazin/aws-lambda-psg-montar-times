@@ -1,54 +1,94 @@
-# aws-lambda-psg-montar-times
+# AWS Lambda - PSG Montar Times
 
-Pipeline de CI/CD com GitHub Actions e infraestrutura com Terraform para fazer deploy de uma AWS Lambda (Python).
+Lambda function para montar times de futebol baseado em uma lista de jogadores, zagueiros fixos e habilidades.
 
-**Resumo**
-- Código da Lambda em `app/` (handler: `lambda_function.lambda_handler`).
-- Dependências Python em `app/requirements.txt` (empacotadas no build).
-- Infra Terraform em `infra/` (IAM role, logs e Lambda).
-- Workflow do GitHub em `.github/workflows/deploy.yml` (build + terraform apply).
+## Contrato da Lambda
 
-## Pré‑requisitos
-- AWS credenciais com permissões para IAM, Lambda, CloudWatch Logs e acesso ao bucket de state S3.
-- Bucket S3 e tabela DynamoDB para o backend do Terraform (state/lock).
-- Secrets no repositório GitHub:
-  - `AWS_ACCESS_KEY_ID`
-  - `AWS_SECRET_ACCESS_KEY`
-  - `AWS_REGION` (ex: `us-east-1`)
-  - `TF_STATE_BUCKET` (bucket S3 do state)
-  - `TF_STATE_LOCK_TABLE` (tabela DynamoDB do lock)
-  - `SUPABASE_URL` e `SUPABASE_KEY` (variáveis de ambiente usadas pelo app)
+### Entrada (Request Body)
 
-## Estrutura
-- `app/`
-  - `lambda_function.py` (handler)
-  - `src/` (módulos auxiliares)
-  - `requirements.txt` (dependências)
-- `infra/`
-  - `main.tf`, `variables.tf` (Lambda, IAM, Logs)
-- `.github/workflows/deploy.yml` (pipeline)
+A lambda espera receber um evento com a seguinte estrutura:
 
-## Como funciona o pipeline
-1. Faz checkout do código e configura Python 3.13.
-2. Instala dependências do `app/requirements.txt` e empacota tudo em `dist/function.zip` (inclui `app/` e libs).
-3. Configura credenciais AWS.
-4. Gera `infra/ci.auto.tfvars.json` com variáveis sensíveis (de Secrets) e roda:
-   - `terraform init` usando backend S3 + DynamoDB.
-   - `terraform validate` e `plan` (em PRs) ou `apply` (no branch `main`).
+```json
+{
+  "body": "{\"jogadores_raw\": [...], \"zagueiros_fixo\": [...], \"habilidasos\": [...]}"
+}
+```
 
-## Variáveis principais (Terraform)
-- `function_name` (default: `psg-montar-times`)
-- `lambda_runtime` (default: `python3.13`)
-- `lambda_handler` (default: `lambda_function.lambda_handler`)
-- `artifact_path` (default: `../dist/function.zip`)
-- `environment` (map com envs, preenchido no CI via `ci.auto.tfvars.json`)
+O `body` deve ser uma string JSON contendo:
 
-## Observações
-- O backend do Terraform requer bucket S3 e tabela DynamoDB já existentes. Crie-os manualmente ou via um stack separado antes do primeiro deploy.
-- Se quiser expor a Lambda via HTTP, podemos adicionar API Gateway (HTTP API) e permissões — peça que eu incluo.
+#### Campos Obrigatórios:
 
-## URL pública da Lambda
-- O Terraform cria uma "Lambda Function URL" pública por padrão (auth `NONE`).
-- A URL é exposta no output `lambda_function_url` após o `terraform apply`.
-- Para ver no GitHub Actions: cheque os logs do job de `apply` ou rode localmente `terraform output lambda_function_url` dentro de `infra/`.
-- Segurança: `NONE` permite acesso anônimo. Para restringir, defina `function_url_auth_type = "AWS_IAM"` em variáveis do Terraform e proteja com IAM/assinatura SigV4.
+- **jogadores_raw** (string): Texto contendo a lista de jogadores em formato estruturado
+  - Deve conter seções identificadas por emojis ou palavras-chave: `🧤 GOLEIROS`, `🏠 DA CASA`, `🎟 VISITANTES`, `🚫 NÃO VÃO`
+  - Cada jogador é extraído das seções, com suporte a nomes entre parênteses indicando quem convidou: `Nome (Convidou por)`
+  - A lambda remove automaticamente emojis e caracteres especiais
+
+- **zagueiros_fixo** (array de strings): Lista com os nomes dos zagueiros que DEVEM estar nos times
+  - Os zagueiros fixos serão distribuídos nos times de forma equilibrada
+  - Sensível a caso (case-insensitive na comparação)
+
+- **habilidasos** (array de strings): Lista com os nomes dos jogadores com maior habilidade/força
+  - Usada pela lógica de montagem de times para equilibrar a qualidade entre os times
+  - Sensível a caso (case-insensitive na comparação)
+
+#### Exemplo de Requisição Completa:
+
+```json
+{
+  "body": "{\"jogadores_raw\": \"\\n🏟 Futebol Segunda - 20h\\n📍 Society Hidrofit\\n💰 R$ 12,00 por jogador\\n📲 Pix (chave aleatória): 40165266-dfa1-4e35-ae05-efdf2b5b8a6e\\n👤 Carlos Augusto \\n\\n⚠ CONFIRMAÇÃO OBRIGATÓRIA ATÉ 12H DE SEGUNDA PARA OS DA CASA ⚠\\nApós esse horário, abrimos vaga pros visitantes.\\n\\n🧤 GOLEIROS\\n1. Ryan (guilherme)\\n2.\\n\\n🏠 DA CASA\\n1. Renan\\n2. Gustaa\\n3. Johnny\\n4. Octávio \\n5. Leozin\\n6. Nathan \\n7. beligui \\n8. Igão\\n9. Matheus\\n10. Kevin\\n11. Rodrigo ✅©\\n12.\\n13.\\n14.\\n15.\\n16.\\n17.\\n18.\\n\\n🎟 VISITANTES\\n1. vinicius (Guilherme)\\n2. Murilo (Octávio)\\n3. Kovacs (Octávio)\\n4. Xoxolim (Leozin)\\n5. Yago (Leozin)\\n\\n🚫 NÃO VÃO\\n* Caio Maia\\n* Alex\\n* Rafael\\n* Carlos\\n* Jeh bass\\n* Fernando\\n* Yan\\n* Vitinho\\n* Rodrigo\\n* Gusin\\n\", \"zagueiros_fixo\": [\"rodrigo\", \"fernando\", \"leozin\"], \"habilidasos\": [\"caio maia\", \"nathan\", \"carlos\", \"alex\", \"gusta\", \"renan\"]}"
+}
+```
+
+#### Formato Legível do Body (para referência):
+
+```json
+{
+  "jogadores_raw": "\n🏟 Futebol Segunda - 20h\n📍 Society Hidrofit\n💰 R$ 12,00 por jogador\n📲 Pix (chave aleatória): 40165266-dfa1-4e35-ae05-efdf2b5b8a6e\n👤 Carlos Augusto \n\n⚠ CONFIRMAÇÃO OBRIGATÓRIA ATÉ 12H DE SEGUNDA PARA OS DA CASA ⚠\nApós esse horário, abrimos vaga pros visitantes.\n\n🧤 GOLEIROS\n1. Ryan (guilherme)\n2.\n\n🏠 DA CASA\n1. Renan\n2. Gustaa\n3. Johnny\n4. Octávio \n5. Leozin\n6. Nathan \n7. beligui \n8. Igão\n9. Matheus\n10. Kevin\n11. Rodrigo ✅©\n12.\n13.\n14.\n15.\n16.\n17.\n18.\n\n🎟 VISITANTES\n1. vinicius (Guilherme)\n2. Murilo (Octávio)\n3. Kovacs (Octávio)\n4. Xoxolim (Leozin)\n5. Yago (Leozin)\n\n🚫 NÃO VÃO\n* Caio Maia\n* Alex\n* Rafael\n* Carlos\n* Jeh bass\n* Fernando\n* Yan\n* Vitinho\n* Rodrigo\n* Gusin\n",
+  "zagueiros_fixo": ["rodrigo", "fernando", "leozin"],
+  "habilidasos": ["caio maia", "nathan", "carlos", "alex", "gusta", "renan"]
+}
+```
+
+### Saída (Response)
+
+A lambda retorna uma resposta com status HTTP e um JSON contendo os times montados:
+
+#### Resposta de Sucesso (HTTP 200):
+
+```json
+{
+  "statusCode": 200,
+  "body": "{\"times\": {\"a\": [\"João Silva\", \"Lucas Oliveira\", \"...\"], \"b\": [\"Pedro Santos\", \"Marcus Vinicius\", \"...\"], \"c\": []}}"
+}
+```
+
+O body contém um objeto `times` com três arrays:
+- **a**: Jogadores do time A
+- **b**: Jogadores do time B
+- **c**: Jogadores do time C
+
+#### Resposta de Erro (HTTP 400/500):
+
+```json
+{
+  "statusCode": 400,
+  "body": "{\"error\": \"mensagem de erro descritiva\"}"
+}
+```
+
+### Códigos de Erro
+
+| Código | Descrição |
+|--------|-----------|
+| 400 | JSON inválido no body, campos obrigatórios faltando, ou erro ao processar jogadores/times |
+| 500 | Erro ao salvar dados do jogo no banco de dados |
+
+
+## Funcionalidades
+
+- ✅ Extração de jogadores a partir de JSON
+- ✅ Remoção automática de emojis dos dados de entrada
+- ✅ Montagem inteligente de times
+- ✅ Suporte a zagueiros fixos
+- ✅ Consideração de habilidades dos jogadores
+- ✅ Persistência dos dados em Supabase

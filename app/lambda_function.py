@@ -19,22 +19,59 @@ def sem_emojis(texto: str) -> str:
 
 def lambda_handler(event, context):
     logger.info(f"Received event: {json.dumps(event)}")
-    event["body"] = sem_emojis(event["body"])
+
+    # 🔹 Headers de CORS (ajusta o Origin se quiser travar por domínio)
+    headers = {
+        "Access-Control-Allow-Origin": "*",  # ou "*" se quiser liberar geral
+        "Access-Control-Allow-Methods": "OPTIONS,POST",
+        "Access-Control-Allow-Headers": "Content-Type",
+    }
+
+    # 🔹 Tratamento do preflight (OPTIONS)
+    method = (
+        event.get("requestContext", {})
+        .get("http", {})
+        .get("method", event.get("httpMethod", ""))
+    )
+
+    if method == "OPTIONS":
+        # Preflight não precisa de body
+        return {
+            "statusCode": 204,
+            "headers": headers,
+            "body": "",
+        }
+
+    # 🔹 Função helper pra sempre devolver com CORS
+    def make_response(status_code: int, body: dict):
+        return {
+            "statusCode": status_code,
+            "headers": headers,
+            "body": json.dumps(body),
+        }
+
+    body_raw = event.get("body", "")
 
     try:
-        body = json.loads(event["body"])
+        body_raw = sem_emojis(body_raw or "")
+    except Exception as e:
+        logger.error(f"Error cleaning emojis: {e}")
+        return make_response(400, {"error": "Invalid body"})
+
+    try:
+        body = json.loads(body_raw)
     except Exception as e:
         logger.error(e)
-        return {"statusCode": 400, "body": json.dumps("Invalid JSON in request body")}
+        return make_response(400, {"error": "Invalid JSON in body"})
 
     required_keys = ["jogadores_raw", "zagueiros_fixo", "habilidasos"]
     if not all(key in body for key in required_keys):
-        return {
-            "statusCode": 400,
-            "body": json.dumps(
-                'Body must contain "jogadores_raw", "zagueiros_fixo" and "habilidasos" keys'
-            ),
-        }
+        return make_response(
+            400,
+            {
+                "error": 'Body must contain "jogadores_raw", "zagueiros_fixo" and "habilidasos" keys'
+            },
+        )
 
     jogadores_raw = body["jogadores_raw"]
     zagueiros_fixo = body["zagueiros_fixo"]
@@ -45,7 +82,7 @@ def lambda_handler(event, context):
         jogadores: list[Jogador] = extrair_jogadores_json(jogadores_raw)
     except Exception as e:
         logger.error(f"Error extracting players: {e}")
-        return {"statusCode": 400, "body": json.dumps(f"Error extracting players: {e}")}
+        return make_response(400, {"error": f"Error extracting players: {e}"})
     logger.info(f"Extracted players: {jogadores}")
 
     # Montar times
@@ -53,7 +90,7 @@ def lambda_handler(event, context):
         times: Times = montar_times(jogadores, zagueiros_fixo, habilidasos)
     except Exception as e:
         logger.error(f"Error forming teams: {e}")
-        return {"statusCode": 400, "body": json.dumps(f"Error forming teams: {e}")}
+        return make_response(400, {"error": f"Error forming teams: {e}"})
     logger.info(f"Formed teams: {times}")
 
     # Salvar jogo
@@ -63,7 +100,7 @@ def lambda_handler(event, context):
         salvar_jogo(Jogo(data=data_jogo, times=times, jogadores=jogadores))
     except Exception as e:
         logger.error(f"Error saving game data: {e}")
-        return {"statusCode": 500, "body": json.dumps(f"Error saving game data: {e}")}
+        return make_response(500, {"error": "Error saving game data"})
     logger.info("Game data saved successfully")
 
     response = {
@@ -74,5 +111,4 @@ def lambda_handler(event, context):
         }
     }
 
-    # Retonar resposta
-    return {"statusCode": 200, "body": json.dumps(response)}
+    return make_response(200, response)
