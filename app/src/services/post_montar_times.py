@@ -12,8 +12,8 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-def post_montar_times(body_raw: str):
-
+def post_montar_times(body_raw: str) -> tuple[int, dict]:
+    """Processar requisição para montar times"""
     try:
         body_raw = sem_emojis(body_raw or "")
     except Exception as e:
