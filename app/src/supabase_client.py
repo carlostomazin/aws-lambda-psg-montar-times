@@ -15,3 +15,12 @@ def salvar_jogo(jogo: Jogo) -> None:
     jogo_dict = asdict(jogo)
 
     supabase.table("jogos").insert(jogo_dict, upsert=True).execute()
+
+
+def recuperar_jogos() -> list[Jogo]:
+    """Retrieve game data from Supabase"""
+    response = supabase.table("jogos").select("*").execute()
+    jogos_data = response.data
+
+    jogos = [Jogo(**jogo) for jogo in jogos_data]
+    return jogos

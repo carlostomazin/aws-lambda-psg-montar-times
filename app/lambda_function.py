@@ -1,6 +1,6 @@
 import logging
 
-from src.services import post_montar_times
+from src.services import get_recupera_jogos, post_montar_times
 from src.utils import make_response
 
 logger = logging.getLogger()
@@ -26,6 +26,8 @@ def lambda_handler(event, context):
         status_code, response = post_montar_times(event.get("body", ""))
     elif method == "GET" and path == "/health":
         status_code, response = 200, {"status": "ok"}
+    elif method == "GET" and path == "/jogos":
+        status_code, response = get_recupera_jogos()
     elif method == "OPTIONS":
         status_code, response = 204, {}
     else:
