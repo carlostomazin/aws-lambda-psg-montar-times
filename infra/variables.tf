@@ -51,3 +51,9 @@ variable "function_url_auth_type" {
   type        = string
   default     = "NONE"
 }
+
+variable "aws_apigateway_name" {
+  description = "API Gateway HTTP API name"
+  type        = string
+  default     = "api-http-psg-fc"
+}
