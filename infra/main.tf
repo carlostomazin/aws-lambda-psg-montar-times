@@ -1,5 +1,8 @@
 data "aws_caller_identity" "current" {}
 
+# ------------------------------------------------------
+# 1 Role de execução da Lambda
+# ------------------------------------------------------
 resource "aws_iam_role" "lambda_exec" {
   name               = "${var.function_name}-exec-role"
   assume_role_policy = jsonencode({
@@ -21,11 +24,9 @@ resource "aws_iam_role_policy_attachment" "basic" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-resource "aws_cloudwatch_log_group" "lambda" {
-  name              = "/aws/lambda/${var.function_name}"
-  retention_in_days = 14
-}
-
+# ------------------------------------------------------
+# 2 Função Lambda
+# ------------------------------------------------------
 resource "aws_lambda_function" "this" {
   function_name    = var.function_name
   role             = aws_iam_role.lambda_exec.arn
@@ -44,8 +45,45 @@ resource "aws_lambda_function" "this" {
   }
 }
 
-# Public Function URL (optional; default NONE = public)
 resource "aws_lambda_function_url" "this" {
   function_name      = aws_lambda_function.this.function_name
   authorization_type = var.function_url_auth_type
 }
+
+resource "aws_cloudwatch_log_group" "lambda" {
+  name              = "/aws/lambda/${var.function_name}"
+  retention_in_days = 14
+}
+
+# ------------------------------------------------------
+# 3 API Gateway HTTP API
+# ------------------------------------------------------
+resource "aws_apigatewayv2_api" "http_api" {
+  name          = var.aws_apigateway_name
+  protocol_type = "HTTP"
+
+  body = templatefile("${path.module}/openapi.yaml", {
+    region     = data.aws_region.current.name
+    lambda_arn = aws_lambda_function.backend.arn
+  })
+}
+
+resource "aws_apigatewayv2_stage" "default" {
+  api_id = aws_apigatewayv2_api.http_api.id
+
+  name        = "$default"
+  auto_deploy = true
+}
+
+# ------------------------------------------------------
+# 4 Permissão para API Gateway invocar a Lambda
+# ------------------------------------------------------
+resource "aws_lambda_permission" "apigw_invoke" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.backend.function_name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
+}
+

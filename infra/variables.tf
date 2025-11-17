@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "function_name" {
   description = "Lambda function name"
   type        = string
-  default     = "lambda-psg-montar-times"
+  default     = "lambda-backend-api-psg-fc"
 }
 
 variable "lambda_runtime" {

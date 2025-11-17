@@ -1,6 +1,6 @@
 import logging
 
-from src.services import get_recupera_jogos, post_montar_times
+from src.services import get_recupera_jogos, post_gerar_jogo
 from src.utils import make_response
 
 logger = logging.getLogger()
@@ -22,15 +22,31 @@ def lambda_handler(event, context):
         .get("path", event.get("path", ""))
     )
 
-    if method == "POST" and path == "/montar-times":
-        status_code, response = post_montar_times(event.get("body", ""))
-    elif method == "GET" and path == "/health":
-        status_code, response = 200, {"status": "ok"}
-    elif method == "GET" and path == "/jogos":
-        status_code, response = get_recupera_jogos()
-    elif method == "OPTIONS":
-        status_code, response = 204, {}
-    else:
-        status_code, response = 404, {"error": "Not Found"}
+    match method:
+        case "GET":
+            match path:
+                case "/health":
+                    status_code, response = 200, {"status": "ok"}
+                case "/jogos":
+                    status_code, response = get_recupera_jogos()
+                case "/jogos/{data}":
+                    status_code, response = get_recupera_jogos(
+                        data=event.get("pathParameters", {}).get("data", "")
+                    )
+                case _:
+                    status_code, response = 404, {"error": "Not Found"}
+
+        case "POST":
+            match path:
+                case "/jogos/gerar":
+                    status_code, response = post_gerar_jogo(event.get("body", ""))
+                case _:
+                    status_code, response = 404, {"error": "Not Found"}
+
+        case "OPTIONS":
+            status_code, response = 204, {}
+
+        case _:
+            status_code, response = 405, {"error": "Method Not Allowed"}
 
     return make_response(status_code, response)

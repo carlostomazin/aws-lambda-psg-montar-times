@@ -1,4 +1,4 @@
 from .get_recupera_jogos import get_recupera_jogos
-from .post_montar_times import post_montar_times
+from .post_gerar_jogo import post_gerar_jogo
 
-all = ["post_montar_times", "get_recupera_jogos"]
+all = ["post_gerar_jogo", "get_recupera_jogos"]

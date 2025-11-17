@@ -1,5 +1,6 @@
 import json
 import logging
+from dataclasses import asdict
 
 from emoji import replace_emoji
 from src.extrair_jogadores_json import extrair_jogadores_json
@@ -12,26 +13,30 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-def post_montar_times(body_raw: str) -> tuple[int, dict]:
-    """Processar requisição para montar times"""
+def post_gerar_jogo(body_raw: str) -> tuple[int, dict]:
+    """Gera um jogo com base no corpo da requisição."""
+    # Limpar emojis do corpo da requisição
     try:
         body_raw = sem_emojis(body_raw or "")
     except Exception as e:
         logger.error(f"Error cleaning emojis: {e}")
         return 400, {"error": "Invalid body"}
 
+    # Parse do corpo da requisição
     try:
         body = json.loads(body_raw)
     except Exception as e:
         logger.error(e)
         return 400, {"error": "Invalid JSON in body"}
 
+    # Validar campos obrigatórios
     required_keys = ["jogadores_raw", "zagueiros_fixo", "habilidasos"]
     if not all(key in body for key in required_keys):
         return 400, {
             "error": 'Body must contain "jogadores_raw", "zagueiros_fixo" and "habilidasos" keys'
         }
 
+    # Extrair variáveis do corpo da requisição
     jogadores_raw = body["jogadores_raw"]
     zagueiros_fixo = body["zagueiros_fixo"]
     habilidasos = body["habilidasos"]
@@ -56,19 +61,14 @@ def post_montar_times(body_raw: str) -> tuple[int, dict]:
     try:
         data_jogo = calcular_data_jogo()
         logger.info(f"Game date: {data_jogo}")
-        salvar_jogo(Jogo(data=data_jogo, times=times, jogadores=jogadores))
+        jogo = Jogo(data=data_jogo, times=times, jogadores=jogadores)
+        salvar_jogo(jogo)
     except Exception as e:
         logger.error(f"Error saving game data: {e}")
         return 500, {"error": "Error saving game data"}
     logger.info("Game data saved successfully")
 
-    response = {
-        "times": {
-            "a": times.a,
-            "b": times.b,
-            "c": times.c,
-        }
-    }
+    response = asdict(jogo)
 
     return 200, response
 
