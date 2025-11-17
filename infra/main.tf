@@ -1,3 +1,4 @@
+data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
 # ------------------------------------------------------
@@ -64,7 +65,7 @@ resource "aws_apigatewayv2_api" "http_api" {
 
   body = templatefile("${path.module}/openapi.yaml", {
     region     = data.aws_region.current.name
-    lambda_arn = aws_lambda_function.backend.arn
+    lambda_arn = aws_lambda_function.this.arn
   })
 }
 
@@ -81,7 +82,7 @@ resource "aws_apigatewayv2_stage" "default" {
 resource "aws_lambda_permission" "apigw_invoke" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.backend.function_name
+  function_name = aws_lambda_function.this.function_name
   principal     = "apigateway.amazonaws.com"
 
   source_arn = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
