@@ -14,50 +14,21 @@ paths:
     get:
       summary: Verifica o estado da API
       operationId: getHealth
-      responses:
-        "200":
-          description: API saudável
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/HealthResponse"
-        "500":
-          description: Erro interno
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
       x-amazon-apigateway-integration:
-        uri: arn:aws:apigateway:{region}:lambda:path/2015-03-31/functions/{lambda_arn}/invocations
-        httpMethod: POST
         type: aws_proxy
+        httpMethod: POST
+        uri: arn:aws:apigateway:{region}:lambda:path/2015-03-31/functions/{lambda_arn}/invocations
+        payloadFormatVersion: "2.0"
 
   /jogos:
     get:
       summary: Lista jogos cadastrados
       operationId: getJogos
-      responses:
-        "200":
-          description: Lista de jogos
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  jogos:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Jogo"
-        "500":
-          description: Erro ao buscar jogos
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
       x-amazon-apigateway-integration:
-        uri: arn:aws:apigateway:{region}:lambda:path/2015-03-31/functions/{lambda_arn}/invocations
-        httpMethod: POST
         type: aws_proxy
+        httpMethod: POST
+        uri: arn:aws:apigateway:{region}:lambda:path/2015-03-31/functions/{lambda_arn}/invocations
+        payloadFormatVersion: "2.0"
 
   /jogos/{data}:
     get:
@@ -71,173 +42,18 @@ paths:
           schema:
             type: string
             format: date
-      responses:
-        "200":
-          description: Lista de jogos para a data fornecida
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  jogos:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Jogo"
-        "400":
-          description: Data inválida
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
-          description: Erro ao buscar jogos
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
       x-amazon-apigateway-integration:
-        uri: arn:aws:apigateway:{region}:lambda:path/2015-03-31/functions/{lambda_arn}/invocations
-        httpMethod: POST
         type: aws_proxy
+        httpMethod: POST
+        uri: arn:aws:apigateway:{region}:lambda:path/2015-03-31/functions/{lambda_arn}/invocations
+        payloadFormatVersion: "2.0"
 
   /jogos/gerar:
     post:
       summary: Gera um novo jogo a partir do texto bruto de jogadores
       operationId: postGerarJogo
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/GerarJogoRequest"
-      responses:
-        "200":
-          description: Jogo gerado com sucesso
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Jogo"
-        "400":
-          description: Erro de validação na entrada ou texto inválido
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
-          description: Erro ao gerar jogo
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
       x-amazon-apigateway-integration:
-        uri: arn:aws:apigateway:{region}:lambda:path/2015-03-31/functions/{lambda_arn}/invocations
-        httpMethod: POST
         type: aws_proxy
-
-components:
-  schemas:
-    HealthResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          example: ok
-
-    ErrorResponse:
-      type: object
-      properties:
-        error:
-          type: string
-          example: "Not Found"
-
-    GerarJogoRequest:
-      type: object
-      required:
-        - jogadores_raw
-      properties:
-        jogadores_raw:
-          type: string
-          description: Texto bruto contendo a lista de jogadores
-          example: |
-            🏟 Futebol Segunda - 20h
-            🧤 GOLEIROS
-            1. Ryan
-            🏠 DA CASA
-            1. Renan
-            2. Gustaa
-            🎟 VISITANTES
-            1. Giovanni (Guilherme)
-        zagueiros_fixo:
-          type: array
-          description: Lista de nomes que devem ser considerados zagueiros fixos
-          items:
-            type: string
-          example:
-            - rodrigo
-            - fernando
-        habilidosos:
-          type: array
-          description: Lista de nomes considerados habilidosos
-          items:
-            type: string
-          example:
-            - carlos
-            - nathan
-            - renan
-
-    Jogo:
-      type: object
-      description: Representa um jogo gerado/armazenado
-      properties:
-        data:
-          type: string
-          format: date
-          description: Data do jogo
-          example: "2024-06-01"
-        times:
-          $ref: "#/components/schemas/Times"
-        jogadores:
-          type: array
-          items:
-            $ref: "#/components/schemas/Jogador"
-
-    Times:
-      type: object
-      description: Times gerados para o jogo
-      properties:
-        a:
-          type: array
-          items:
-            type: string
-          example: ["Renan", "Nathan", "Ryan"]
-        b:
-          type: array
-          items:
-            type: string
-          example: ["Gustaa", "Carlos", "Igão"]
-        c:
-          type: array
-          items:
-            type: string
-          example: ["Johnny", "Octávio", "Leozin"]
-
-    Jogador:
-      type: object
-      description: Informações de cada jogador
-      properties:
-        nome:
-          type: string
-          example: "Renan"
-        goleiro:
-          type: boolean
-          example: false
-        visitante:
-          type: boolean
-          example: false
-        quem_convidou:
-          type: string
-          nullable: true
-          example: "Guilherme"
-        pagou:
-          type: boolean
-          example: false
+        httpMethod: POST
+        uri: arn:aws:apigateway:{region}:lambda:path/2015-03-31/functions/{lambda_arn}/invocations
+        payloadFormatVersion: "2.0"
