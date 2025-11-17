@@ -1,59 +1,66 @@
-openapi: 3.0.3
+openapi: "3.0.1"
 info:
-  title: API de Jogos de Futebol
-  version: 1.0.0
-  description: |
-    API para geração e recuperação de jogos de futebol.
-
+  title: "API de Jogos de Futebol"
+  description: "API para geração e recuperação de jogos de futebol.\n"
+  version: "1.0.0"
 servers:
-  - url: https://api.exemplo.com
-    description: API Gateway HTTP (AWS)
-
+- url: "https://9s0xp12qyb.execute-api.us-east-1.amazonaws.com/{basePath}"
+  variables:
+    basePath:
+      default: ""
 paths:
   /health:
     get:
-      summary: Verifica o estado da API
-      operationId: getHealth
+      operationId: "getHealth"
+      responses:
+        default:
+          description: "Default response for GET /health"
       x-amazon-apigateway-integration:
-        type: aws_proxy
-        httpMethod: POST
-        uri: arn:aws:apigateway:{region}:lambda:path/2015-03-31/functions/{lambda_arn}/invocations
         payloadFormatVersion: "2.0"
-
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:529160768027:function:lambda-backend-api-psg-fc/invocations"
+        connectionType: "INTERNET"
   /jogos:
     get:
-      summary: Lista jogos cadastrados
-      operationId: getJogos
+      operationId: "getJogos"
+      responses:
+        default:
+          description: "Default response for GET /jogos"
       x-amazon-apigateway-integration:
-        type: aws_proxy
-        httpMethod: POST
-        uri: arn:aws:apigateway:{region}:lambda:path/2015-03-31/functions/{lambda_arn}/invocations
         payloadFormatVersion: "2.0"
-
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:529160768027:function:lambda-backend-api-psg-fc/invocations"
+        connectionType: "INTERNET"
   /jogos/{data}:
     get:
-      summary: Recupera jogos por data
-      operationId: getJogosPorData
-      parameters:
-        - name: data
-          in: path
-          required: true
-          description: Data do jogo (YYYY-MM-DD)
-          schema:
-            type: string
-            format: date
+      operationId: "getJogosPorData"
+      responses:
+        default:
+          description: "Default response for GET /jogos/{data}"
       x-amazon-apigateway-integration:
-        type: aws_proxy
-        httpMethod: POST
-        uri: arn:aws:apigateway:{region}:lambda:path/2015-03-31/functions/{lambda_arn}/invocations
         payloadFormatVersion: "2.0"
-
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:529160768027:function:lambda-backend-api-psg-fc/invocations"
+        connectionType: "INTERNET"
+    parameters:
+    - name: "data"
+      in: "path"
+      description: "Generated path parameter for data"
+      required: true
+      schema:
+        type: "string"
   /jogos/gerar:
     post:
-      summary: Gera um novo jogo a partir do texto bruto de jogadores
-      operationId: postGerarJogo
+      operationId: "postGerarJogo"
+      responses:
+        default:
+          description: "Default response for POST /jogos/gerar"
       x-amazon-apigateway-integration:
-        type: aws_proxy
-        httpMethod: POST
-        uri: arn:aws:apigateway:{region}:lambda:path/2015-03-31/functions/{lambda_arn}/invocations
         payloadFormatVersion: "2.0"
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:529160768027:function:lambda-backend-api-psg-fc/invocations"
+        connectionType: "INTERNET"
