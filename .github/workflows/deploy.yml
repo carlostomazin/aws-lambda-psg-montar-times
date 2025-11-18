@@ -8,6 +8,7 @@ on:
       - "infra/**"
       - ".github/workflows/**"
       - "requirements.txt"
+      - "destroy.yml" 
   pull_request:
     branches: [ "main" ]
   workflow_dispatch: {}
@@ -76,7 +77,26 @@ jobs:
         working-directory: infra
         run: terraform plan -var "artifact_path=../dist/function.zip"
 
+      # --- Lê destroy.yml e expõe em uma saída ---
+      - name: Read destroy config
+        id: destroy_cfg
+        run: |
+          if [ -f "destroy.yml" ]; then
+            VALUE=$(grep -i '^destroy:' destroy.yml | awk '{print tolower($2)}')
+          else
+            VALUE="false"
+          fi
+          echo "destroy=$VALUE" >> $GITHUB_OUTPUT
+          echo "Destroy flag: $VALUE"
+
+      # --- Apply só se NÃO for destroy ---
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.destroy_cfg.outputs.destroy != 'true'
         working-directory: infra
         run: terraform apply -auto-approve -var "artifact_path=../dist/function.zip"
+
+      # --- Destroy só se destroy: true ---
+      - name: Terraform Destroy
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.destroy_cfg.outputs.destroy == 'true'
+        working-directory: infra
+        run: terraform destroy -auto-approve
