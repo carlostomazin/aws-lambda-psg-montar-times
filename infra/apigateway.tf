@@ -44,10 +44,10 @@ resource "aws_apigatewayv2_route" "jogos" {
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
 }
 
-# GET /jogos/{data}
-resource "aws_apigatewayv2_route" "jogos_por_data" {
+# GET /jogos/{date}
+resource "aws_apigatewayv2_route" "jogos_por_date" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "GET /jogos/{data}"
+  route_key = "GET /jogos/{date}"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
 }
 

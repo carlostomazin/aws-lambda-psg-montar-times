@@ -21,9 +21,12 @@ def salvar_jogo(jogo: Jogo) -> None:
     supabase.table(TABLE_NAME).insert(jogo_dict, upsert=True).execute()
 
 
-def recuperar_jogos() -> list[dict]:
+def recuperar_jogos(date: str = None) -> list[dict]:
     """
     Retrieve game data from Supabase
+
+    Args:
+        date (str, optional): Date of the game to filter by. Defaults to None.
 
     Returns:
     list[dict]: List of games
@@ -32,18 +35,20 @@ def recuperar_jogos() -> list[dict]:
         jogadores_pagantes: int
         jogadores_visitantes: int
     """
-    response = (
-        supabase.table(TABLE_NAME)
-        .select("date_game,players_total,players_paid,players_visitors")
-        .execute()
-    )
-    jogos_data = response.data
-
-    # para portugues
-    for jogo in jogos_data:
-        jogo["data_jogo"] = jogo.pop("date_game")
-        jogo["jogadores_totais"] = jogo.pop("players_total")
-        jogo["jogadores_pagantes"] = jogo.pop("players_paid")
-        jogo["jogadores_visitantes"] = jogo.pop("players_visitors")
+    if date:
+        response = (
+            supabase.table(TABLE_NAME)
+            .select("*")
+            .eq("date_game", date)
+            .execute()
+        )
+        jogos_data = response.data
+    else:
+        response = (
+            supabase.table(TABLE_NAME)
+            .select("date_game,players_total,players_paid,players_visitors")
+            .execute()
+        )
+        jogos_data = response.data
 
     return jogos_data

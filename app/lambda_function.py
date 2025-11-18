@@ -29,9 +29,9 @@ def lambda_handler(event, context):
                     status_code, response = 200, {"status": "ok"}
                 case "/jogos":
                     status_code, response = get_recupera_jogos()
-                case "/jogos/{data}":
+                case "/jogos/{date}":
                     status_code, response = get_recupera_jogos(
-                        data=event.get("pathParameters", {}).get("data", "")
+                        date=event.get("pathParameters", {}).get("date", "")
                     )
                 case _:
                     status_code, response = 404, {"error": "Not Found"}
