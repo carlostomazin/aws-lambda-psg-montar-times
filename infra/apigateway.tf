@@ -1,6 +1,13 @@
 resource "aws_apigatewayv2_api" "http_api" {
   name          = var.aws_apigateway_name
   protocol_type = "HTTP"
+
+  # Se quiser já deixar CORS redondo:
+  cors_configuration {
+    allow_origins = ["*"]             # ajuste pra seu domínio em produção
+    allow_methods = ["GET", "POST", "OPTIONS"]
+    allow_headers = ["content-type", "x-requested-with"]
+  }
 }
 
 resource "aws_apigatewayv2_stage" "default" {
@@ -13,17 +20,33 @@ resource "aws_apigatewayv2_stage" "default" {
 resource "aws_apigatewayv2_integration" "lambda_integration" {
   api_id = aws_apigatewayv2_api.http_api.id
 
-  integration_type = "AWS_PROXY"
-  integration_uri  = aws_lambda_function.this.arn
-
-  integration_method = "POST"
-  payload_format_version = "2.0"
+  integration_type        = "AWS_PROXY"
+  integration_uri         = aws_lambda_function.this.arn
+  integration_method      = "POST"
+  payload_format_version  = "2.0"
 }
 
-resource "aws_apigatewayv2_route" "hello_route" {
-  api_id = aws_apigatewayv2_api.http_api.id
+#########################
+# ROTAS DA TUA API
+#########################
 
-  route_key = "GET /hello"
+# GET /jogos
+resource "aws_apigatewayv2_route" "jogos" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "GET /jogos"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
 }
 
+# GET /jogos/{data}
+resource "aws_apigatewayv2_route" "jogos_por_data" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "GET /jogos/{data}"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+}
+
+# POST /jogos/gerar
+resource "aws_apigatewayv2_route" "jogos_gerar" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "POST /jogos/gerar"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+}
