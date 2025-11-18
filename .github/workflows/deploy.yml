@@ -67,9 +67,6 @@ jobs:
         working-directory: infra
         run: terraform validate
 
-      - name: Terraform Plan
-        working-directory: infra
-        run: terraform plan -var "artifact_path=../dist/function.zip"
 
       - name: Read destroy config
         id: destroy_cfg
@@ -81,6 +78,15 @@ jobs:
           fi
           echo "destroy=$VALUE" >> $GITHUB_OUTPUT
           echo "Destroy flag: $VALUE"
+
+      - name: Terraform Plan
+        working-directory: infra
+        run: |
+          if [ "${{ steps.destroy_cfg.outputs.destroy }}" == "true" ]; then
+            terraform plan -destroy;
+          else
+            terraform plan -var "artifact_path=../dist/function.zip";
+          fi
 
       - name: Terraform Apply
         if: steps.destroy_cfg.outputs.destroy != 'true'
