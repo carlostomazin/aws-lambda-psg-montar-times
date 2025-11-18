@@ -16,7 +16,7 @@ def identificar_zagueiros(
     zagueiros = []
     restantes = []
     for j in jogadores:
-        nome_base = limpar_nome_base(j.nome)
+        nome_base = limpar_nome_base(j.name)
         if nome_base in zagueiros_fixo:
             zagueiros.append(j)
         else:
@@ -32,7 +32,7 @@ def identificar_habilidosos(
     habilidosos = []
     restantes = []
     for j in jogadores:
-        nome_base = limpar_nome_base(j.nome)
+        nome_base = limpar_nome_base(j.name)
         if nome_base in habilidosos:
             habilidosos.append(j)
         else:

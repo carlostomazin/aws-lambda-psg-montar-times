@@ -12,13 +12,7 @@ def calcular_data_jogo() -> str:
 
 def make_response(status_code: int, body: dict):
     """Função helper pra sempre devolver com CORS"""
-    headers = {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "OPTIONS,POST",
-        "Access-Control-Allow-Headers": "Content-Type",
-    }
     return {
         "statusCode": status_code,
-        "headers": headers,
         "body": json.dumps(body),
     }
