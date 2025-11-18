@@ -2,7 +2,7 @@ import os
 from dataclasses import asdict
 
 from dotenv import load_dotenv
-from schemas import Jogo
+from src.schemas import Jogo
 from supabase import Client, create_client
 
 load_dotenv()
@@ -21,10 +21,13 @@ def salvar_jogo(jogo: Jogo) -> None:
     supabase.table(TABLE_NAME).insert(jogo_dict, upsert=True).execute()
 
 
-def recuperar_jogos() -> list[str]:
+def recuperar_jogos() -> list[dict]:
     """Retrieve game data from Supabase"""
-    response = supabase.table(TABLE_NAME).select("date_game").execute()
+    response = (
+        supabase.table(TABLE_NAME)
+        .select("date_game,players_total,players_paid,players_visitors")
+        .execute()
+    )
     jogos_data = response.data
-    jogos = [jogo["date_game"] for jogo in jogos_data]
 
-    return jogos
+    return jogos_data
