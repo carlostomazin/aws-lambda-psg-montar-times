@@ -8,7 +8,6 @@ def get_recupera_jogos() -> list[dict]:
     """Recuperar jogos armazenados"""
     try:
         jogos: list[dict] = recuperar_jogos()
-        # jogos = [asdict(jogo) for jogo in jogos]
 
     except Exception as e:
         return 500, {"error": f"Error retrieving games: {e}"}
