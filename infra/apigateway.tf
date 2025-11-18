@@ -30,6 +30,13 @@ resource "aws_apigatewayv2_integration" "lambda_integration" {
 # ROTAS DA TUA API
 #########################
 
+# GET /health
+resource "aws_apigatewayv2_route" "health" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "GET /health"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+}
+
 # GET /jogos
 resource "aws_apigatewayv2_route" "jogos" {
   api_id    = aws_apigatewayv2_api.http_api.id

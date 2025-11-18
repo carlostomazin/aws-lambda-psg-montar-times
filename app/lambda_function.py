@@ -43,9 +43,6 @@ def lambda_handler(event, context):
                 case _:
                     status_code, response = 404, {"error": "Not Found"}
 
-        case "OPTIONS":
-            status_code, response = 204, {}
-
         case _:
             status_code, response = 405, {"error": "Method Not Allowed"}
 
