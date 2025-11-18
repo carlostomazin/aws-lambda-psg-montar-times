@@ -7,11 +7,7 @@ on:
       - "app/**"
       - "infra/**"
       - ".github/workflows/**"
-      - "requirements.txt"
-      - "destroy.yml" 
-  pull_request:
-    branches: [ "main" ]
-  workflow_dispatch: {}
+      - "destroy.yml"
 
 jobs:
   build-and-deploy:
@@ -22,12 +18,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # --- Lê destroy.yml e expõe em uma saída ---
+      - name: Read destroy config
+        id: destroy_cfg
+        run: |
+          if [ -f "destroy.yml" ]; then
+            VALUE=$(grep -i '^destroy:' destroy.yml | awk '{print tolower($2)}')
+          else
+            VALUE="false"
+          fi
+          echo "destroy=$VALUE" >> $GITHUB_OUTPUT
+          echo "Destroy flag: $VALUE"
+
       - name: Setup Python
+        if: steps.destroy_cfg.outputs.destroy != 'true'
         uses: actions/setup-python@v5
         with:
           python-version: '3.13'
 
       - name: Install deps and build Lambda package
+        if: steps.destroy_cfg.outputs.destroy != 'true'
         run: |
           python -m pip install --upgrade pip
           pip install -r app/requirements.txt
@@ -65,38 +75,22 @@ jobs:
 
       - name: Terraform Init (S3 backend)
         working-directory: infra
-        run: |
-          terraform init
+        run: terraform init
 
       - name: Terraform Validate
         working-directory: infra
         run: terraform validate
 
       - name: Terraform Plan
-        if: github.event_name != 'push'
         working-directory: infra
         run: terraform plan -var "artifact_path=../dist/function.zip"
 
-      # --- Lê destroy.yml e expõe em uma saída ---
-      - name: Read destroy config
-        id: destroy_cfg
-        run: |
-          if [ -f "destroy.yml" ]; then
-            VALUE=$(grep -i '^destroy:' destroy.yml | awk '{print tolower($2)}')
-          else
-            VALUE="false"
-          fi
-          echo "destroy=$VALUE" >> $GITHUB_OUTPUT
-          echo "Destroy flag: $VALUE"
-
-      # --- Apply só se NÃO for destroy ---
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.destroy_cfg.outputs.destroy != 'true'
+        if: steps.destroy_cfg.outputs.destroy != 'true'
         working-directory: infra
         run: terraform apply -auto-approve -var "artifact_path=../dist/function.zip"
 
-      # --- Destroy só se destroy: true ---
       - name: Terraform Destroy
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.destroy_cfg.outputs.destroy == 'true'
+        if: steps.destroy_cfg.outputs.destroy == 'true'
         working-directory: infra
         run: terraform destroy -auto-approve
