@@ -62,11 +62,6 @@ resource "aws_cloudwatch_log_group" "lambda" {
 resource "aws_apigatewayv2_api" "http_api" {
   name          = var.aws_apigateway_name
   protocol_type = "HTTP"
-
-  body = templatefile("${path.module}/openapi.yaml", {
-    region     = data.aws_region.current.name
-    lambda_arn = aws_lambda_function.this.arn
-  })
 }
 
 # ------------------------------------------------------
