@@ -5,11 +5,11 @@ from typing import List
 
 @dataclass
 class Jogador:
-    nome: str
-    goleiro: bool = False
-    visitante: bool = False
-    quem_convidou: str = ""
-    pagou: bool = False
+    name: str
+    gk: bool = False
+    visitor: bool = False
+    invited_by: str = ""
+    paid: bool = False
 
 
 @dataclass
@@ -21,9 +21,9 @@ class Times:
 
 @dataclass
 class Jogo:
-    data: str
-    times: Times
-    jogadores: List[Jogador]
-    atualizado_em: str = field(
+    date_game: str
+    teams: Times
+    players: List[Jogador]
+    updated_at: str = field(
         default_factory=lambda: datetime.now(timezone(timedelta(hours=-3))).isoformat()
     )

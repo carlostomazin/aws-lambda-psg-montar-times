@@ -61,7 +61,7 @@ def post_gerar_jogo(body_raw: str) -> tuple[int, dict]:
     try:
         data_jogo = calcular_data_jogo()
         logger.info(f"Game date: {data_jogo}")
-        jogo = Jogo(data=data_jogo, times=times, jogadores=jogadores)
+        jogo = Jogo(date_game=data_jogo, teams=times, players=jogadores)
         salvar_jogo(jogo)
     except Exception as e:
         logger.error(f"Error saving game data: {e}")

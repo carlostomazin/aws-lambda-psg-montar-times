@@ -1,2 +1,3 @@
 emoji
 supabase
+dotenv

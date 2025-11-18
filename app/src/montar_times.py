@@ -44,7 +44,7 @@ def montar_times(
     jogadores: list[Jogador], zagueiros_fixo: list = [], habilidosos: list = []
 ) -> Times:
     """Create balanced teams based on the provided player list"""
-    jogadores = [j for j in jogadores if j.goleiro is False]
+    jogadores = [j for j in jogadores if j.gk is False]
     total = len(jogadores)
 
     if total < 12:
@@ -76,7 +76,7 @@ def montar_times(
 
     # Convert to Times object with player names
     return Times(
-        a=[j.nome for j in times[0]],
-        b=[j.nome for j in times[1]],
-        c=[j.nome for j in times[2]],
+        a=[j.name for j in times[0]],
+        b=[j.name for j in times[1]],
+        c=[j.name for j in times[2]],
     )

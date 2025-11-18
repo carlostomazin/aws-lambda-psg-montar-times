@@ -80,10 +80,10 @@ def extrair_jogadores_json(texto: str) -> list[Jogador]:
         vistos.add(chave)
 
         jogador = Jogador(
-            nome=nome,
-            goleiro=goleiro,
-            visitante=visitante,
-            quem_convidou=convidou,
+            name=nome,
+            gk=goleiro,
+            visitor=visitante,
+            invited_by=convidou,
         )
         jogadores.append(jogador)
 
