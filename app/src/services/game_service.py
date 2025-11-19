@@ -18,11 +18,11 @@ class GameService:
         else:
             return 404, {"error": "Game not found"}
 
-    def create(self, body_data):
+    def create(self, payload):
         try:
             # Assume body_data is already validated and processed
             # new_game = Game.from_dict(body_data)
-            game = self.repository.save(body_data)
+            game = self.repository.save(payload)
             return 201, game
         except Exception as e:
             logger.error(f"Error creating game: {e}")
