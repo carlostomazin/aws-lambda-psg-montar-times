@@ -1,6 +1,3 @@
-from dataclasses import asdict
-
-from src.schemas import Jogo
 from src.supabase_client import recuperar_jogos
 
 

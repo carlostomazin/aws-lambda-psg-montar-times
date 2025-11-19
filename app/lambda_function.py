@@ -27,18 +27,18 @@ def lambda_handler(event, context):
             match path:
                 case "/health":
                     status_code, response = 200, {"status": "ok"}
-                case "/jogos":
+                case "/games":
                     status_code, response = get_recupera_jogos()
-                case "/jogos/{date}":
+                case "/games/{gameId}":
                     status_code, response = get_recupera_jogos(
-                        date=event.get("pathParameters", {}).get("date", "")
+                        date=event.get("pathParameters", {}).get("gameId", "")
                     )
                 case _:
                     status_code, response = 404, {"error": "Not Found"}
 
         case "POST":
             match path:
-                case "/jogos/gerar":
+                case "/games/create":
                     status_code, response = post_gerar_jogo(event.get("body", ""))
                 case _:
                     status_code, response = 404, {"error": "Not Found"}

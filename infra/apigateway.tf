@@ -37,23 +37,23 @@ resource "aws_apigatewayv2_route" "health" {
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
 }
 
-# GET /jogos
-resource "aws_apigatewayv2_route" "jogos" {
+# GET /games
+resource "aws_apigatewayv2_route" "games" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "GET /jogos"
+  route_key = "GET /games"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
 }
 
-# GET /jogos/{date}
-resource "aws_apigatewayv2_route" "jogos_por_date" {
+# GET /games/{date}
+resource "aws_apigatewayv2_route" "games_por_date" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "GET /jogos/{date}"
+  route_key = "GET /games/{gameId}"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
 }
 
-# POST /jogos/gerar
-resource "aws_apigatewayv2_route" "jogos_gerar" {
+# POST /games/create
+resource "aws_apigatewayv2_route" "games_create" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "POST /jogos/gerar"
+  route_key = "POST /games/create"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
 }

@@ -37,10 +37,7 @@ def recuperar_jogos(date: str = None) -> list[dict]:
     """
     if date:
         response = (
-            supabase.table(TABLE_NAME)
-            .select("*")
-            .eq("date_game", date)
-            .execute()
+            supabase.table(TABLE_NAME).select("*").eq("date_game", date).execute()
         )
         jogos_data = response.data
     else:
@@ -52,3 +49,19 @@ def recuperar_jogos(date: str = None) -> list[dict]:
         jogos_data = response.data
 
     return jogos_data
+
+
+def recuperar_jogos_by_id(game_id: int) -> dict:
+    """
+    Retrieve a specific game data from Supabase by game ID
+
+    Args:
+        game_id (int): ID of the game to retrieve.
+    Returns:
+    dict: Game data
+    """
+    response = supabase.table(TABLE_NAME).select("*").eq("id", game_id).execute()
+    jogo_data = response.data
+    if jogo_data:
+        return jogo_data[0]
+    return {}
