@@ -1,3 +1,5 @@
+from dataclasses import asdict
+
 from aws_lambda_powertools import Logger
 from emoji import replace_emoji
 from src.extrair_jogadores_json import extrair_jogadores_json
@@ -42,8 +44,9 @@ class GameService:
         data_jogo = calcular_data_jogo()
 
         game_payload = Game(data_jogo, times, jogadores)
+        game_payload_dict = asdict(game_payload)
         try:
-            game_response = self.repository.save(game_payload)
+            game_response = self.repository.save(game_payload_dict)
             return 201, game_response
         except Exception as e:
             logger.error(f"Error creating game: {e}")
