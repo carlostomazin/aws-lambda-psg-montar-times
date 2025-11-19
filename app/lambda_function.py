@@ -2,11 +2,14 @@ from aws_lambda_powertools import Logger, Tracer
 from aws_lambda_powertools.event_handler import APIGatewayHttpResolver, Response
 from aws_lambda_powertools.logging import correlation_paths
 from aws_lambda_powertools.utilities.typing import LambdaContext
-from src.services import get_recupera_jogos, post_gerar_jogo
+
+from app.src.repositories.game_repository import GameRepository
+from app.src.services.game_service import GameService
 
 tracer = Tracer()
 logger = Logger()
 app = APIGatewayHttpResolver()
+game_service = GameService(repository=GameRepository())
 
 
 @app.get("/health")
@@ -19,7 +22,26 @@ def get_health():
 @app.get("/games")
 @tracer.capture_method
 def get_games():
-    status_code, response = get_recupera_jogos()
+    status_code, response = game_service.get_all()
+    return Response(
+        status_code=status_code, content_type="application/json", body=response
+    )
+
+
+@app.get("/games/<game_id>")
+@tracer.capture_method
+def get_game_by_id(game_id: str):
+    status_code, response = game_service.get_by_id(game_id)
+    return Response(
+        status_code=status_code, content_type="application/json", body=response
+    )
+
+
+@app.post("/games/create")
+@tracer.capture_method
+def post_create_game():
+    body_data: dict = app.current_event.json_body
+    status_code, response = game_service.create(body_data)
     return Response(
         status_code=status_code, content_type="application/json", body=response
     )
