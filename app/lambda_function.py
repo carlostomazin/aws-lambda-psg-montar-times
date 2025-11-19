@@ -40,6 +40,7 @@ def get_game_by_id(game_id: str):
 @tracer.capture_method
 def post_create_game():
     body_data: dict = app.current_event.json_body
+    logger.debug(f"Received payload for creating game: {body_data}")
     status_code, response = game_service.create(body_data)
     return Response(
         status_code=status_code, content_type="application/json", body=response
