@@ -1,6 +1,6 @@
 import random
 
-from src.schemas import Jogador, Times
+from src.schemas import Player, Times
 
 
 def limpar_nome_base(nome: str) -> str:
@@ -9,9 +9,9 @@ def limpar_nome_base(nome: str) -> str:
 
 
 def identificar_zagueiros(
-    jogadores: list[Jogador],
+    jogadores: list[Player],
     zagueiros_fixo: list[str] = [],
-) -> tuple[list[Jogador], list[Jogador]]:
+) -> tuple[list[Player], list[Player]]:
     """Separate defenders from other players"""
     zagueiros = []
     restantes = []
@@ -25,9 +25,9 @@ def identificar_zagueiros(
 
 
 def identificar_habilidosos(
-    jogadores: list[Jogador],
+    jogadores: list[Player],
     habilidosos: list[str] = [],
-) -> tuple[list[Jogador], list[Jogador]]:
+) -> tuple[list[Player], list[Player]]:
     """Separate skilled players from other players"""
     habilidosos = []
     restantes = []
@@ -41,14 +41,16 @@ def identificar_habilidosos(
 
 
 def montar_times(
-    jogadores: list[Jogador], zagueiros_fixo: list = [], habilidosos: list = []
+    jogadores: list[Player], zagueiros_fixo: list = [], habilidosos: list = []
 ) -> Times:
     """Create balanced teams based on the provided player list"""
     jogadores = [j for j in jogadores if j.gk is False]
     total = len(jogadores)
 
     if total < 12:
-        raise ValueError(f"Número insuficiente de jogadores (mínimo 12). Quantidade fornecida: {total}")
+        raise ValueError(
+            f"Número insuficiente de jogadores (mínimo 12). Quantidade fornecida: {total}"
+        )
 
     # Initialize empty teams
     times = [[], [], []]

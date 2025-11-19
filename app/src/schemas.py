@@ -4,7 +4,7 @@ from typing import List
 
 
 @dataclass
-class Jogador:
+class Player:
     name: str
     gk: bool = False
     visitor: bool = False
@@ -20,10 +20,10 @@ class Times:
 
 
 @dataclass
-class Jogo:
+class Game:
     date_game: str
     teams: Times
-    players: List[Jogador]
+    players: List[Player]
     updated_at: str = field(
         default_factory=lambda: datetime.now(timezone(timedelta(hours=-3))).isoformat()
     )

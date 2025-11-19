@@ -3,8 +3,9 @@ from aws_lambda_powertools.event_handler import APIGatewayHttpResolver, Response
 from aws_lambda_powertools.logging import correlation_paths
 from aws_lambda_powertools.utilities.typing import LambdaContext
 from pydantic import BaseModel
-
+from src.extrair_jogadores_json import extrair_jogadores_json
 from src.repositories.game_repository import GameRepository
+from src.schemas import Player
 from src.services.game_service import GameService
 
 tracer = Tracer()
@@ -36,17 +37,23 @@ def get_game_by_id(game_id: str):
         status_code=status_code, content_type="application/json", body=response
     )
 
+
 class GameCreateRequest(BaseModel):
     jogadores_raw: str
     zagueiros_fixos: list[str]
     habilidosos: list[str]
+    jogadores_dict: list[Player] = None
+
+    # process jogadores_raw
+    def model_post_init(self):
+        self.jogadores_dict = extrair_jogadores_json(self.jogadores_raw)
 
 
 @app.post("/games/create")
 @tracer.capture_method
 def post_create_game(body_data: GameCreateRequest):
     body_data: dict = body_data.model_dump()
-    logger.debug(f"Received payload for creating game: {body_data}")
+    logger.info(f"Received payload for creating game: {body_data}")
     status_code, response = game_service.create(body_data)
     return Response(
         status_code=status_code, content_type="application/json", body=response

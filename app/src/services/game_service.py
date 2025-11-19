@@ -1,4 +1,9 @@
 from aws_lambda_powertools import Logger
+from emoji import replace_emoji
+from src import extrair_jogadores_json
+from src.montar_times import montar_times
+from src.schemas import Game, Times
+from src.utils import calcular_data_jogo
 
 logger = Logger()
 
@@ -27,9 +32,19 @@ class GameService:
             return 500, {"error": "Error retrieving game"}
 
     def create(self, payload: dict) -> tuple[int, dict]:
+        payload = replace_emoji(payload, replace="")
+
+        jogadores = extrair_jogadores_json(payload.get("jogadores_raw", ""))
+        zagueiros_fixo = payload.get("zagueiros_fixos")
+        habilidosos = payload.get("habilidosos")
+
+        times: Times = montar_times(jogadores, zagueiros_fixo, habilidosos)
+        data_jogo = calcular_data_jogo()
+
+        game_payload = Game(data_jogo, times, jogadores)
         try:
-            game = self.repository.save(payload)
-            return 201, game
+            game_response = self.repository.save(game_payload)
+            return 201, game_response
         except Exception as e:
             logger.error(f"Error creating game: {e}")
             return 500, {"error": "Error creating game"}

@@ -2,7 +2,7 @@ import json
 import re
 from typing import Dict, List
 
-from src.schemas import Jogador
+from src.schemas import Player
 
 SECOES = {
     "GOLEIROS": "goleiros",
@@ -33,7 +33,7 @@ def _linha_eh_vazia_ou_numero(l: str) -> bool:
     return (not l) or bool(re.fullmatch(r"[\d\.\-\*•– ]*", l))
 
 
-def extrair_jogadores_json(texto: str) -> list[Jogador]:
+def extrair_jogadores_json(texto: str) -> list[Player]:
     jogadores: List[Dict] = []
     vistos = set()
 
