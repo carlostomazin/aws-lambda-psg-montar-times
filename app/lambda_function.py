@@ -3,8 +3,8 @@ from aws_lambda_powertools.event_handler import APIGatewayHttpResolver, Response
 from aws_lambda_powertools.logging import correlation_paths
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
-from app.src.repositories.game_repository import GameRepository
-from app.src.services.game_service import GameService
+from src.repositories.game_repository import GameRepository
+from src.services.game_service import GameService
 
 tracer = Tracer()
 logger = Logger()
@@ -15,7 +15,6 @@ game_service = GameService(repository=GameRepository())
 @app.get("/health")
 @tracer.capture_method
 def get_health():
-    logger.info("Health check endpoint called")
     return {"status": "ok"}
 
 

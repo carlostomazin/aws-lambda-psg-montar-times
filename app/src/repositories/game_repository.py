@@ -13,7 +13,7 @@ class GameRepository:
     def find_all(self):
         response = (
             self.supabase.table("games")
-            .select("date_game,players_total,players_paid,players_visitors")
+            .select("id,date_game,players_total,players_paid,players_visitors")
             .execute()
         )
         jogos_data = response.data
@@ -26,9 +26,11 @@ class GameRepository:
             return jogo_data[0]
         return None
 
-    def save(self, jogo: dict) -> None:
+    def save(self, jogo: dict) -> dict:
         """Save game data to Supabase"""
-        self.supabase.table("games").insert(jogo, upsert=True).execute()
+        response = self.supabase.table("games").insert(jogo).execute()
+        print(response)
+        return response.data
 
     def update(self, game_id: int, jogo: dict) -> None:
         """Update game data in Supabase"""
