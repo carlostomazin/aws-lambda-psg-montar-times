@@ -1,6 +1,6 @@
 from aws_lambda_powertools import Logger
 from emoji import replace_emoji
-from src import extrair_jogadores_json
+from src.extrair_jogadores_json import extrair_jogadores_json
 from src.montar_times import montar_times
 from src.schemas import Game, Times
 from src.utils import calcular_data_jogo
@@ -32,7 +32,7 @@ class GameService:
             return 500, {"error": "Error retrieving game"}
 
     def create(self, payload: dict) -> tuple[int, dict]:
-        payload["jogadores_raw"]  = replace_emoji(payload["jogadores_raw"] , replace="")
+        payload["jogadores_raw"] = replace_emoji(payload["jogadores_raw"], replace="")
 
         jogadores = extrair_jogadores_json(payload["jogadores_raw"])
         zagueiros_fixo = payload.get("zagueiros_fixos")
