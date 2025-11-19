@@ -21,32 +21,23 @@ def salvar_jogo(jogo: Jogo) -> None:
     supabase.table(TABLE_NAME).insert(jogo_dict, upsert=True).execute()
 
 
-def recuperar_jogos(date: str = None) -> list[dict]:
+def recuperar_jogos() -> list[dict]:
     """
     Retrieve game data from Supabase
 
-    Args:
-        date (str, optional): Date of the game to filter by. Defaults to None.
-
     Returns:
     list[dict]: List of games
-        data_jogo: str
-        jogadores_totais: int
-        jogadores_pagantes: int
-        jogadores_visitantes: int
+        date_game: str
+        players_total: int
+        players_paid: int
+        players_visitors: int
     """
-    if date:
-        response = (
-            supabase.table(TABLE_NAME).select("*").eq("date_game", date).execute()
-        )
-        jogos_data = response.data
-    else:
-        response = (
-            supabase.table(TABLE_NAME)
-            .select("date_game,players_total,players_paid,players_visitors")
-            .execute()
-        )
-        jogos_data = response.data
+    response = (
+        supabase.table(TABLE_NAME)
+        .select("date_game,players_total,players_paid,players_visitors")
+        .execute()
+    )
+    jogos_data = response.data
 
     return jogos_data
 
@@ -59,6 +50,12 @@ def recuperar_jogos_by_id(game_id: int) -> dict:
         game_id (int): ID of the game to retrieve.
     Returns:
     dict: Game data
+        date_game: str
+        players: list[dict]
+        teams: list[dict]
+        players_total: int
+        players_paid: int
+        players_visitors: int
     """
     response = supabase.table(TABLE_NAME).select("*").eq("id", game_id).execute()
     jogo_data = response.data
