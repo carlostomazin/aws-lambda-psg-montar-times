@@ -24,6 +24,3 @@ class Game:
     date_game: str
     teams: Times
     players: List[Player]
-    updated_at: str = field(
-        default_factory=lambda: datetime.now(timezone(timedelta(hours=-3))).isoformat()
-    )
