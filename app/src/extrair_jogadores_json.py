@@ -79,7 +79,7 @@ def extrair_jogadores_json(texto: str) -> list[Player]:
             continue
         vistos.add(chave)
 
-        jogador = Jogador(
+        jogador = Player(
             name=nome,
             gk=goleiro,
             visitor=visitante,
