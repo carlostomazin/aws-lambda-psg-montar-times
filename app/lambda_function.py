@@ -42,11 +42,6 @@ class GameCreateRequest(BaseModel):
     jogadores_raw: str
     zagueiros_fixos: list[str]
     habilidosos: list[str]
-    jogadores_dict: list[Player] = None
-
-    # process jogadores_raw
-    def model_post_init(self):
-        self.jogadores_dict = extrair_jogadores_json(self.jogadores_raw)
 
 
 @app.post("/games/create")
