@@ -14,6 +14,8 @@ resource "aws_lambda_function" "this" {
   environment {
     variables = var.environment
   }
+
+  layers = [var.arn_layer_powertools]
 }
 
 resource "aws_lambda_permission" "apigw_invoke" {

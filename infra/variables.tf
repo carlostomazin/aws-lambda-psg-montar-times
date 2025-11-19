@@ -57,3 +57,9 @@ variable "aws_apigateway_name" {
   type        = string
   default     = "api-http-psg-fc"
 }
+
+variable "arn_layer_powertools" {
+  description = "ARN of the AWS Lambda Powertools layer"
+  type        = string
+  default     = "arn:aws:lambda:us-east-1:017000801446:layer:AWSLambdaPowertoolsPythonV3-python313-arm64:19"
+}

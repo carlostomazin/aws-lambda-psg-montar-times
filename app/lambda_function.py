@@ -1,49 +1,23 @@
-import logging
+from aws_lambda_powertools import Logger, Tracer
+from aws_lambda_powertools.event_handler import APIGatewayHttpResolver
+from aws_lambda_powertools.logging import correlation_paths
+from aws_lambda_powertools.utilities.typing import LambdaContext
 
-from src.services import get_recupera_jogos, post_gerar_jogo
-from src.utils import make_response
-
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+tracer = Tracer()
+logger = Logger()
+app = APIGatewayHttpResolver()
 
 
-def lambda_handler(event, context):
-    logger.info(f"Received event: {event}")
+@app.get("/")
+@app.get("/health")
+@tracer.capture_method
+def get_health():
+    logger.info("Health check endpoint called")
+    return {"status": "ok"}
 
-    method = (
-        event.get("requestContext", {})
-        .get("http", {})
-        .get("method", event.get("httpMethod", ""))
-    )
 
-    path = (
-        event.get("requestContext", {})
-        .get("http", {})
-        .get("path", event.get("path", ""))
-    )
-
-    match method:
-        case "GET":
-            match path:
-                case "/health":
-                    status_code, response = 200, {"status": "ok"}
-                case "/games":
-                    status_code, response = get_recupera_jogos()
-                case "/games/{gameId}":
-                    status_code, response = get_recupera_jogos(
-                        date=event.get("pathParameters", {}).get("gameId", "")
-                    )
-                case _:
-                    status_code, response = 404, {"error": "Not Found"}
-
-        case "POST":
-            match path:
-                case "/games/create":
-                    status_code, response = post_gerar_jogo(event.get("body", ""))
-                case _:
-                    status_code, response = 404, {"error": "Not Found"}
-
-        case _:
-            status_code, response = 405, {"error": "Method Not Allowed"}
-
-    return make_response(status_code, response)
+# You can continue to use other utilities just as before
+@logger.inject_lambda_context(correlation_id_path=correlation_paths.API_GATEWAY_HTTP)
+@tracer.capture_lambda_handler
+def lambda_handler(event: dict, context: LambdaContext) -> dict:
+    return app.resolve(event, context)
