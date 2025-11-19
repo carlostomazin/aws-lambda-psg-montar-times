@@ -32,9 +32,9 @@ class GameService:
             return 500, {"error": "Error retrieving game"}
 
     def create(self, payload: dict) -> tuple[int, dict]:
-        payload = replace_emoji(payload, replace="")
+        payload["jogadores_raw"]  = replace_emoji(payload["jogadores_raw"] , replace="")
 
-        jogadores = extrair_jogadores_json(payload.get("jogadores_raw", ""))
+        jogadores = extrair_jogadores_json(payload["jogadores_raw"])
         zagueiros_fixo = payload.get("zagueiros_fixos")
         habilidosos = payload.get("habilidosos")
 
