@@ -2,6 +2,7 @@ from dataclasses import asdict
 
 from aws_lambda_powertools import Logger
 from emoji import replace_emoji
+from postgrest import APIError
 from src.extrair_jogadores_json import extrair_jogadores_json
 from src.montar_times import montar_times
 from src.schemas import Game, Times
@@ -48,11 +49,11 @@ class GameService:
         try:
             game_response = self.repository.save(game_payload_dict)
             return 201, game_response
-        except Exception as e:
+        except APIError as e:
             if (
-                e["message"]
+                e.message
                 == 'duplicate key value violates unique constraint "game_date_key"'
-                and e["code"] == 23505
+                and e.code == 23505
             ):
                 game_id = self.repository.find_by_date_game(data_jogo)["id"]
                 try:
@@ -60,9 +61,9 @@ class GameService:
                 except Exception as e:
                     logger.error(f"Error creating game: {e}")
                     return 500, {"error": "Error creating game"}
-            else:
-                logger.error(f"Error creating game: {e}")
-                return 500, {"error": "Error creating game"}
+        except Exception as e:
+            logger.error(f"Error creating game: {e}")
+            return 500, {"error": "Error creating game"}
 
     def update(self, game_id, body_data) -> tuple[int, dict]:
         try:
