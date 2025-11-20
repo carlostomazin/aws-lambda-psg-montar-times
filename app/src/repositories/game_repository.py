@@ -26,12 +26,24 @@ class GameRepository:
             return jogo_data[0]
         return None
 
+    def find_by_date_game(self, game_date: str):
+        response = (
+            self.supabase.table("games")
+            .select("*")
+            .eq("date_game", game_date)
+            .execute()
+        )
+        jogo_data = response.data
+        if jogo_data:
+            return jogo_data[0]
+        return None
+
     def save(self, jogo: dict) -> dict:
         """Save game data to Supabase"""
         response = self.supabase.table("games").insert(jogo).execute()
-        print(response)
         return response.data
 
-    def update(self, game_id: int, jogo: dict) -> None:
+    def update(self, game_id: int, jogo: dict) -> dict:
         """Update game data in Supabase"""
-        self.supabase.table("games").update(jogo).eq("id", game_id).execute()
+        response = self.supabase.table("games").update(jogo).eq("id", game_id).execute()
+        return response.data

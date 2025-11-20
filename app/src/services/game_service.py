@@ -49,17 +49,25 @@ class GameService:
             game_response = self.repository.save(game_payload_dict)
             return 201, game_response
         except Exception as e:
-            logger.error(f"Error creating game: {e}")
-            return 500, {"error": "Error creating game"}
+            if (
+                e["message"]
+                == 'duplicate key value violates unique constraint "game_date_key"'
+                and e["code"] == 23505
+            ):
+                game_id = self.repository.find_by_date_game(data_jogo)["id"]
+                try:
+                    self.update(game_id, game_payload_dict)
+                except Exception as e:
+                    logger.error(f"Error creating game: {e}")
+                    return 500, {"error": "Error creating game"}
+            else:
+                logger.error(f"Error creating game: {e}")
+                return 500, {"error": "Error creating game"}
 
     def update(self, game_id, body_data) -> tuple[int, dict]:
         try:
-            game = self.repository.find_by_id(game_id)
-            if not game:
-                return 404, {"error": "Game not found"}
-            game.update_from_dict(body_data)
-            self.repository.save(game)
-            return 200, game.to_dict()
+            game_response = self.repository(game_id, body_data)
+            return 200, game_response
         except Exception as e:
             logger.error(f"Error updating game: {e}")
             return 500, {"error": "Error updating game"}

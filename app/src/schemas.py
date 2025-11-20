@@ -21,6 +21,6 @@ class Times:
 
 @dataclass
 class Game:
-    date_game: str
+    game_date: str
     teams: Times
     players: List[Player]
